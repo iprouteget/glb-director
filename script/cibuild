@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 
 . script/helpers/folding.sh
 
-script/cibuild-create-packages
+script/cibuild-create-packages-focal
 script/cibuild-prepare
 script/test-glb-redirect
 script/test-glb-healthcheck
