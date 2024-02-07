@@ -1,0 +1,10 @@
+[NetDev]
+Name=vxlan40
+Kind=vxlan
+
+[VXLAN]
+VNI=40
+Local=2001:db8:1::1
+Group=ff05::40
+TTL=2
+DestinationPort=4789

@@ -1,0 +1,5 @@
+[Match]
+Name=vxlan50
+
+[Network]
+Bridge=br50

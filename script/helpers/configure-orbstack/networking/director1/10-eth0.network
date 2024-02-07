@@ -1,0 +1,14 @@
+[Match]
+Name=eth0
+
+[Link]
+MTUBytes=9000
+
+[Network]
+DHCP=yes
+Address=2001:db8:4::1/64
+VXLAN=vxlan50
+
+[Route]
+Destination=2001:db8::/32
+GatewayOnlink=yes

@@ -4,39 +4,55 @@ set -e
 
 HOSTPATH=$(cd $(dirname "$0") && cd .. && pwd)
 cd "$(dirname "$0")/.."
+VM_PROVIDER=${1:-"vagrant"}
+ORB_OS_RELEASE="focal"
 
 . script/helpers/folding.sh
 
 GLB_REDIRECT_VERSION="$( source src/glb-redirect/dkms.conf; echo $PACKAGE_VERSION )"
 
-begin_fold "Bringing up and syncing vagrant test environment"
-(
-  vagrant box update
-  vagrant up
+if [ "$VM_PROVIDER" == "orbstack" ]; then
+  begin_fold "Bringing up and syncing orbstack test environment"
+  (
+    . script/helpers/prepare-orbstack
 
-  script/helpers/prepare-vagrant director-test
-  script/helpers/prepare-vagrant proxy1
-  script/helpers/prepare-vagrant proxy2
-)
-end_fold
+    check_orb_install
+    build_stack $ORB_OS_RELEASE
+    init_stack
+  )
+  end_fold
 
-begin_fold "Setting up modules on vagrant proxy hosts"
-(
-  for proxy in proxy1 proxy2; do
-    vagrant ssh $proxy -- bash /dev/stdin <<EOF
-      set -e
-
-      if lsmod | grep -q 'ipt_GLBREDIRECT'; then
-        sudo iptables -F
-        sudo rmmod ipt_GLBREDIRECT
-      fi
-
-      sudo apt remove -y glb-redirect-iptables-dkms && sudo apt-get clean || true
-      sudo apt install -y /vagrant/tmp/build/glb-redirect-iptables-dkms_${GLB_REDIRECT_VERSION}_all.deb
-
-      sudo iptables -A INPUT -p udp -m udp --dport 19523 -j GLBREDIRECT
-      sudo iptables -L -v
-EOF
-  done
-)
-end_fold
+else
+  echo "vagrant"
+  #begin_fold "Bringing up and syncing vagrant test environment"
+  #(
+  #  vagrant box update
+  #  vagrant up
+#
+  #  script/helpers/prepare-vagrant director-test
+  #  script/helpers/prepare-vagrant proxy1
+  #  script/helpers/prepare-vagrant proxy2
+  #)
+  #end_fold
+#
+  #begin_fold "Setting up modules on vagrant proxy hosts"
+  #(
+  #  for proxy in proxy1 proxy2; do
+  #    vagrant ssh $proxy -- bash /dev/stdin <<EOF
+  #      set -e
+#
+  #      if lsmod | grep -q 'ipt_GLBREDIRECT'; then
+  #        sudo iptables -F
+  #        sudo rmmod ipt_GLBREDIRECT
+  #      fi
+#
+  #      sudo apt remove -y glb-redirect-iptables-dkms && sudo apt-get clean || true
+  #      sudo apt install -y /vagrant/tmp/build/glb-redirect-iptables-dkms_${GLB_REDIRECT_VERSION}_all.deb
+#
+  #      sudo iptables -A INPUT -p udp -m udp --dport 19523 -j GLBREDIRECT
+  #      sudo iptables -L -v
+  #EOF
+  #  done
+  #)
+  #end_fold
+fi

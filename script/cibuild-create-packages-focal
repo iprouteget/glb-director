@@ -9,7 +9,7 @@ cd "$(dirname "$0")/.."
 
 begin_fold "Preparing Docker build environment"
 (
-  docker build -t glb-director-build-focal -f script/Dockerfile.focal script
+  docker build --platform linux/amd64 -t glb-director-build-focal -f script/Dockerfile.focal script
 )
 end_fold
 

@@ -1,0 +1,72 @@
+#!/bin/bash
+#
+# Prepare orbstack test environment
+instances=(router user director-test director1 director2 proxy1 proxy2)
+ORB_KERNEL_VERSION="5.15.0-91-generic"
+ORB_GO_VERSION="1.21.6"
+
+build_stack() {
+  os_release="${1:-focal}"
+
+  # Create VMs in OrbStack
+  echo "Creating instances..."
+  for instance in ${instances[@]}
+  do
+    if orb info $instance &> /dev/null
+    then
+      echo "'${instance}' already exists!"
+      continue
+    fi
+    orb create -a amd64 ubuntu:$os_release $instance
+    echo "${instance} VM created!"
+  done
+  echo "Done!"
+}
+
+check_orb_install() {
+  # Verify OrbStack is installed
+  echo "Checking OrbStack installation"
+  if ! command -v orb &> /dev/null
+  then
+    echo "OrbStack is not installed. Please install OrbStack and try again."
+    exit 1
+  fi
+  echo "OrbStack is installed!"
+}
+
+configure_network() {
+  # Add network config
+  echo "Configuring network..."
+
+  echo "Updating 'router'"
+
+
+}
+destroy_stack() {
+  # Destroy VMs in OrbStack
+  echo "Destroying instances..."
+  for instance in ${instances[@]}
+  do
+    if ! orb info $instance &> /dev/null
+    then
+      echo "'${instance}' does not exist!"
+      continue
+    fi
+    orb delete $instance -f
+  done
+  echo "Done!"
+}
+
+init_stack() {
+  # Initialize VM configs, networking, etc.
+  echo "Initializing instances..."
+
+  for instance in ${instances[@]}
+  do
+    orb run -m $instance configure-orbstack/base-install.sh $ORB_KERNEL_VERSION $ORB_GO_VERSION
+    echo "Rebooting ${instance}..."
+    orb restart $instance
+    echo "Done!"
+  done
+  echo "Done!"
+}
